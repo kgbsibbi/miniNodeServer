@@ -28,8 +28,8 @@ exports.insertMemoSql = (memo) =>{
     return `insert into memo(userid, title, content, originalFileName, fileUrl, savedTime)
       values(
         '${memo.userid}',
-        ${memo.title},
-        ${memo.content},
+        '${memo.title}',
+        '${memo.content}',
         '${memo.originalFileName}',
         '${memo.fileUrl}',
         ${memo.savedTime}
@@ -38,8 +38,8 @@ exports.insertMemoSql = (memo) =>{
       return `insert into memo(userid, title, content, savedTime)
         values(
           '${memo.userid}',
-          ${memo.title},
-          ${memo.content},
+          '${memo.title}',
+          '${memo.content}',
           ${memo.savedTime}
         )`;
     }
@@ -48,16 +48,16 @@ exports.insertMemoSql = (memo) =>{
 exports.updateMemoSql = (memo) =>{
   if(memo.originalFileName != null){
     return `update memo set
-        title=${memo.title},
-        content=${memo.content},
+        title='${memo.title}',
+        content='${memo.content}',
         originalFileName='${memo.originalFileName}',
         fileUrl='${memo.fileUrl}',
         savedTime=${memo.savedTime}
         where memoid=${memo.memoid}`;
     } else {
       return `update memo set
-          title=${memo.title},
-          content=${memo.content},
+          title='${memo.title}',
+          content='${memo.content}',
           originalFileName=null,
           fileUrl=null,
           savedTime=${memo.savedTime}
@@ -66,7 +66,7 @@ exports.updateMemoSql = (memo) =>{
 };
 
 exports.deleteMemoSql = (memoid) =>{
-  return `delete from memo where memoid='${memoid}'`;
+  return `delete from memo where memoid=${memoid}`;
 }
 
 exports.deleteMemoByUserSql = (userid) =>{

@@ -28,6 +28,8 @@ router.get('/', authMiddleware, function(req, res, next) {
 
 router.post('/', [authMiddleware, upload.single('file')], function(req, res, next) {
   const memo = req.body;
+  memo.title=memo.title.replace(/\"/g, "")
+  memo.content=memo.content.replace(/\"/g, "")
   memo.userid = req.userid;
   memo.savedTime = Date.now();
   if(req.file){
@@ -37,7 +39,6 @@ router.post('/', [authMiddleware, upload.single('file')], function(req, res, nex
     memo.originalFileName=null;
     memo.fileUrl=null;
   }
-  console.log(sql.insertMemoSql(memo));
   db.executeUpdate(sql.insertMemoSql(memo));
   res.end('');
 });
@@ -54,6 +55,8 @@ router.get('/:memoid', authMiddleware, function(req, res, next){
 
 router.put('/:memoid', [authMiddleware, upload.single('file')] , function(req, res, next){
   const memo = req.body;
+  memo.title=memo.title.replace(/\"/g, "")
+  memo.content=memo.content.replace(/\"/g, "")
   memo.memoid=req.params.memoid;
   memo.savedTime = Date.now();
   if(req.file){
