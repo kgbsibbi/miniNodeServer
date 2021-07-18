@@ -5,7 +5,6 @@ const authMiddleware = require('../middleware/auth');
 const db = require('../models/sqlite-db');
 const sql = require('../models/user-sql');
 
-
 router.post('/login', function(req, res, next) {
   const {userid, password} = req.body;
   const secret = req.app.get('jwt-secret');
@@ -16,47 +15,41 @@ router.post('/login', function(req, res, next) {
     });
   }
 
-  const login = (result) => {
-    const p = new Promise((resolve, reject)=>{
-      let user=null;
-      if(result != null) user = result[0]
-      if(user == null) reject(new Error('Login failed'))
-      else{
-        if(user.password == password){
-          resolve(user);
-        }
-        else {
-          reject(new Error('Login failed'));
-        }
-      }
-    })
-    return p;
-  };
+  async function login(rows){
+    let user = null
+    if(rows!=null) user = rows[0]
+    if(user == null) { throw new Error('Login failed')}
+    else{
+      console.log(user)
+      if(user.password==password) return user
+      else throw new Error('Login failed')
+    }
+  }
 
-  const authorize = (user) => {
-    const p = new Promise((resolve, reject) => {
-      let exptime = Math.floor(Date.now() / 1000) + (60*60); // 1 hour
-      jwt.sign(
-        {
-          iss: "miniServer", // token issuer
-          sub: user.userid,
-          name: user.name,
-          aud: "miniServer", // receiver
-          iat: Math.floor(Date.now() / 1000), // issued at.
-          exp: exptime,
-        },
-        secret,
-        (err, token) => {
-          if (err) reject(err)
-          resolve({token:token, name:user.name})
-        })
-    })
-    return p;
-  };
+  async function authorize(user){
+    const payload={
+      sub: user.userid,
+      name: user.name,
+      aud: "miniServer", // receiver
+      iat: Math.floor(Date.now() / 1000), // issued at
+    }
+    const option={
+      algorithm : "HS256",
+      expiresIn : "30m",
+      issuer : "miniServer"
+    }
+    const result= {
+      token:jwt.sign(payload, secret, option),
+      name:user.name,
+      userid:user.userid
+    };
+    console.log(result)
+    return result
+  }
 
-  const respond = (result) => {
+  async function respond(result){
     res.json(result);
-  };
+  }
 
   const onError = (error) => {
     console.log('auth-done with error')
@@ -65,11 +58,13 @@ router.post('/login', function(req, res, next) {
     })
   }
 
-  db.executeQuery(sql.selectOneUserSql(userid), (error, rows)=>{
-    login(rows)
-    .then(authorize)
-    .then(respond)
-    .catch(onError)
+  db.executeQuery(
+    sql.selectOneUserSql(userid),
+      (error, rows)=>{
+      login(rows)
+      .then(authorize)
+      .then(respond)
+      .catch(onError)
   });
 });
 
